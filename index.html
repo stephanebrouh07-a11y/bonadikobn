@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace Client - Banque BNP Paribas</title>
+    <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --accent-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #334155;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; }
+        body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+        .hidden { display: none !important; }
+
+        /* ANIMATION DU FOND : Zoom avant / arrière et variation lumineuse */
+        @keyframes bgZoomAndLight {
+            0% {
+                background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), 
+                            url('https://media.lesechos.com/api/v1/images/view/6a1d1d8eaf4cdf90dc08b54e/1280x720-webp/2167113-1780292846-1825694-1549535854-bnp3.webp') center/cover no-repeat;
+                transform: scale(1);
+            }
+            50% {
+                background: linear-gradient(rgba(15, 23, 42, 0.15), rgba(15, 23, 42, 0.15)), 
+                            url('https://media.lesechos.com/api/v1/images/view/6a1d1d8eaf4cdf90dc08b54e/1280x720-webp/2167113-1780292846-1825694-1549535854-bnp3.webp') center/cover no-repeat;
+                transform: scale(1.08); 
+            }
+            100% {
+                background: linear-gradient(rgba(15, 23, 42, 0.4), rgba(15, 23, 42, 0.4)), 
+                            url('https://media.lesechos.com/api/v1/images/view/6a1d1d8eaf4cdf90dc08b54e/1280x720-webp/2167113-1780292846-1825694-1549535854-bnp3.webp') center/cover no-repeat;
+                transform: scale(1); 
+            }
+        }
+
+        .login-wrapper { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            min-height: 100vh; 
+            overflow: hidden;
+            position: relative;
+            animation: bgZoomAndLight 12s ease-in-out infinite; 
+        }
+
+        .login-card { 
+            background: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(6px); 
+            width: 100%; 
+            max-width: 420px; 
+            padding: 40px; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3); 
+            text-align: center; 
+            position: relative;
+            z-index: 2;
+        }
+
+        /* GLOBE 3D EN CSS */
+        .globe-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 15px auto;
+            perspective: 300px;
+        }
+
+        @keyframes rotateGlobe3D {
+            0% { background-position: 0 0; }
+            100% { background-position: 200px 0; }
+        }
+
+        .globe {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30px 30px, #4ade80, #166534 70%, #022c22 100%),
+                        repeating-linear-gradient(45deg, rgba(74, 222, 128, 0.4) 0px, rgba(34, 197, 94, 0.4) 10px, transparent 10px, transparent 20px);
+            background-color: #2563eb;
+            box-shadow: inset -15px -15px 40px rgba(0, 0, 0, 0.7), 0 0 15px rgba(37, 99, 235, 0.5);
+            animation: rotateGlobe3D 6s linear infinite;
+            margin: 0 auto;
+        }
+
+        .login-card h2 { color: var(--primary-color); font-size: 1.5rem; margin-bottom: 8px; }
+        .login-card p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px; }
+
+        /* EN-TÊTE */
+        header { background-color: var(--primary-color); color: white; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-globe { width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle at 12px 12px, #4ade80, #166534 70%, #022c22 100%); background-color: #2563eb; box-shadow: inset -5px -5px 15px rgba(0, 0, 0, 0.7); animation: rotateGlobe3D 6s linear infinite; }
+        .header-brand h2 { font-size: 1.25rem; font-weight: 600; letter-spacing: 0.5px; }
+        .user-info { font-size: 0.9rem; color: #cbd5e1; display: flex; align-items: center; gap: 15px; }
+        .logout-btn { background: rgba(255,255,255,0.1); color: white; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: 0.85rem; transition: 0.2s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* CONTENU PRINCIPAL */
+        .main-container { display: flex; max-width: 1200px; margin: 30px auto; gap: 25px; padding: 0 20px; flex: 1; width: 100%; }
+        
+        /* MENU LATÉRAL */
+        .sidebar { width: 260px; background: var(--card-bg); border-radius: 12px; padding: 15px; height: fit-content; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        .sidebar ul { list-style: none; }
+        .sidebar li { padding: 12px 16px; margin-bottom: 6px; border-radius: 8px; cursor: pointer; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+        .sidebar li:hover { background-color: #f1f5f9; color: var(--primary-color); }
+        .sidebar li.active { background-color: #eff6ff; color: var(--accent-color); font-weight: 600; }
+
+        /* ZONE D'AFFICHAGE */
+        .content { flex: 1; background: var(--card-bg); border-radius: 12px; padding: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* CARTE DE SOLDE ET INFOS UTILES */
+        .account-card { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden; }
+        .account-card::after { content: ''; position: absolute; right: -20px; bottom: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.03); border-radius: 50%; pointer-events: none; }
+        .account-card p.label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; }
+        .account-card h1 { font-size: 2.2rem; margin: 10px 0; font-weight: 700; color: #f8fafc; }
+        .account-card p.iban { font-family: monospace; font-size: 0.9rem; color: #cbd5e1; }
+
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 25px; }
+        .info-box { background: #f8fafc; border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; }
+        .info-box h5 { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 5px; }
+        .info-box p { color: var(--primary-color); font-weight: 600; font-size: 0.95rem; }
+
+        .card-visual { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border-radius: 12px; padding: 20px; max-width: 320px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3); }
+        .card-visual .chip { width: 40px; height: 30px; background: #e2e8f0; border-radius: 5px; margin-bottom: 15px; }
+        .card-visual .number { font-family: monospace; font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 15px; }
+        .card-visual .details { display: flex; justify-content: space-between; font-size: 0.85rem; }
+
+        /* FORMULAIRES & BOUTONS */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--text-main); }
+        input, select { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        button.btn-primary { background-color: var(--accent-color); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; width: 100%; transition: 0.2s; }
+        button.btn-primary:hover { background-color: var(--accent-hover); }
+
+        /* TABLEAUX & BADGES */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        th { background-color: #f8fafc; color: var(--text-muted); font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-block; }
+        .credit { background: #dcfce7; color: #166534; }
+        .debit { background: #fee2e2; color: #991b1b; }
+        .danger { background: #fee2e2; color: var(--danger-color); }
+
+        /* PIED DE PAGE */
+        footer {
+            background-color: var(--primary-color);
+            color: #94a3b8;
+            text-align: center;
+            padding: 20px;
+            font-size: 0.85rem;
+            margin-top: auto;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        footer a { color: #cbd5e1; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. ÉCRAN DE CONNEXION -->
+    <div id="login-section" class="login-wrapper">
+        <div class="login-card">
+            <!-- GLOBE ANIMÉ CONÇU EN CSS -->
+            <div class="globe-container">
+                <div class="globe"></div>
+            </div>
+            <h2>Banque BNP Paribas</h2>
+            <p>Espace de la gestion bancaire</p>
+            
+            <div class="form-group">
+                <label>Identifiant</label>
+                <input type="text" id="username" placeholder="Entrez votre identifiant">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="password" placeholder="Entrez votre mot de passe">
+            </div>
+            <button class="btn-primary" onclick="login()">Se connecter</button>
+        </div>
+    </div>
+
+    <!-- 2. ESPACE CLIENT (Caché au départ) -->
+    <div id="dashboard-section" class="hidden">
+        <header>
+            <div class="header-brand">
+                <div class="header-globe"></div>
+                <h2>BNP Paribas</h2>
+            </div>
+            <div class="user-info">
+                <span>Bienvenue, <strong id="user-display">Utilisateur</strong></span>
+                <button class="logout-btn" onclick="logout()">Déconnexion</button>
+            </div>
+        </header>
+
+        <div class="main-container">
+            <div class="sidebar">
+                <ul>
+                    <li class="active" onclick="switchTab('comptes', this)">Mes Comptes</li>
+                    <li onclick="switchTab('cartes', this)">Mes Cartes</li>
+                    <li onclick="switchTab('virement', this)">Effectuer un Virement</li>
+                    <li onclick="switchTab('historique', this)">Historique des Opérations</li>
+                </ul>
+            </div>
+
+            <div class="content">
+                <!-- ONGLET COMPTES -->
+                <div id="comptes" class="tab-content active">
+                    <h3 style="margin-bottom: 20px;">JEAN LUC DUVAL</h3>
+                    
+                    <div class="account-card">
+                        <p class="label">Compte Chèque Principal</p>
+                        <h1><span id="balance">987 585</span> €</h1>
+                        <p class="iban">IBAN : FR76 3000 1000 0112 3456 7890 123</p>
+                    </div>
+
+                    <!-- INFORMATIONS UTILES AVEC STATUT MODIFIÉ EN ROUGE -->
+                    <div class="info-grid">
+                        <div class="info-box">
+                            <h5>Conseiller dédié</h5>
+                            <p>Marc Lemaire (Agence Paris Opéra)</p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Téléphone agence</h5>
+                            <p>+33 1 42 00 00 00</p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Statut du compte</h5>
+                            <p><span class="badge danger">Suspendu pour des raisons de sécurité ou de réglementation</span></p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Découvert autorisé</h5>
+                            <p>2 500,00 €</p>
+                        </div>
+                    </div>
+
+                    <h4 style="margin-top: 30px;">Dernières opérations</h4>
+                    <table>
+                        <thead>
+                            <tr><th>Date</th><th>Libellé</th><th>Type</th><th>Montant</th></tr>
+                        </thead>
+                        <tbody id="tx-table">
+                            <tr><td>30/09/2026</td><td>Dépôt initial (compte)</td><td><span class="badge credit">Crédit</span></td><td>+987 585 €</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- ONGLET MES CARTES -->
+                <div id="cartes" class="tab-content">
+                    <h3 style="margin-bottom: 20px;">Gestion de vos cartes bancaires</h3>
+                    <div class="card-visual">
+                        <div class="chip"></div>
+                        <div class="number">•••• •••• •••• 4892</div>
+                        <div class="details">
+                            <span>JEAN LUC DUVAL</span>
+                            <span>EXP : 12/28</span>
+                        </div>
+                    </div>
+                    <div class="info-grid" style="margin-top: 20px;">
+                        <div class="info-box">
+                            <h5>Type de carte</h5>
+                            <p>Visa Premier Internationale</p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Plafond de paiement (7j)</h5>
+                            <p>6 000,00 €</p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Plafond de retrait (7j)</h5>
+                            <p>1 500,00 €</p>
+                        </div>
+                        <div class="info-box">
+                            <h5>Paiement sans contact</h5>
+                            <p><span class="badge credit">Activé</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ONGLET VIREMENT -->
+                <div id="virement" class="tab-content">
+                    <h3 style="margin-bottom: 20px;">Saisir un Virement</h3>
+                    <div class="form-group">
+                        <label>Compte à débiter</label>
+                        <select id="account-select"><option>Compte Principal (987 585 €)</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Bénéficiaire</label>
+                        <input type="text" id="recipient" placeholder="Nom ou IBAN du destinataire">
+                    </div>
+                    <div class="form-group">
+                        <label>Montant (€)</label>
+                        <input type="number" id="amount" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Motif de l'opération</label>
+                        <input type="text" id="reason" placeholder="Exemple : Achat de fourniture">
+                    </div>
+                    <button class="btn-primary" onclick="processTransfer()">Valider le virement</button>
+                </div>
+
+                <!-- ONGLET HISTORIQUE -->
+                <div id="historique" class="tab-content">
+                    <h3 style="margin-bottom: 20px;">Historique complet</h3>
+                    <table>
+                        <thead>
+                            <tr><th>Date</th><th>Description</th><th>Montant</th></tr>
+                        </thead>
+                        <tbody id="full-history">
+                            <tr><td>30/09/2026</td><td>Ouverture de compte</td><td>+987 585 €</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- PIED DE PAGE -->
+        <footer>
+            <p>Plateforme compte bancaire - Sécurisé par cryptage SSL 256-bit</p>
+            <p style="margin-top: 5px;">Contact Support : <a href="mailto:bnpparibasbanque@mbox.re">bnpparisbasbanque@mbox.re</a></p>
+        </footer>
+    </div>
+
+    <!-- 3. CODE JAVASCRIPT -->
+    <script>
+        let balance = 987585;
+
+        function login() {
+            const userSaisi = document.getElementById('username').value;
+            const passSaisi = document.getElementById('password').value;
+
+            // Identifiants configurés
+            const utilisateurAutorise = "jeanlucd07";
+            const motDePasseAutorise = "77990202";
+
+            if (userSaisi === utilisateurAutorise && passSaisi === motDePasseAutorise) {
+                document.getElementById('login-section').classList.add('hidden');
+                document.getElementById('dashboard-section').classList.remove('hidden');
+                document.getElementById('user-display').innerText = userSaisi;
+            } else {
+                alert("Identifiant ou mot de passe incorrect !");
+            }
+        }
+
+        function switchTab(tabId, element) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            
+            document.getElementById(tabId).classList.add('active');
+            element.classList.add('active');
+        }
+
+        function processTransfer() {
+            const recipient = document.getElementById('recipient').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+            const reason = document.getElementById('reason').value || "Virement";
+
+            if (!recipient || isNaN(amount) || amount <= 0) {
+                alert("Veuillez saisir un destinataire et un montant valide.");
+                return;
+            }
+
+            if (amount > balance) {
+                alert("Solde insuffisant.");
+                return;
+            }
+
+            balance -= amount;
+            const formattedBalance = balance.toLocaleString('fr-FR');
+            document.getElementById('balance').innerText = formattedBalance;
+            document.getElementById('account-select').options[0].text = `Compte Principal (${formattedBalance} €)`;
+
+            const today = new Date().toLocaleDateString('fr-FR');
+            const formattedAmount = amount.toLocaleString('fr-FR');
+            const newRow = `<tr><td>${today}</td><td>${reason} (vers ${recipient})</td><td><span class="badge debit">Débit</span></td><td>-${formattedAmount} €</td></tr>`;
+            
+            document.getElementById('tx-table').innerHTML = newRow + document.getElementById('tx-table').innerHTML;
+            document.getElementById('full-history').innerHTML = `<tr><td>${today}</td><td>Virement vers ${recipient} - ${reason}</td><td>-${formattedAmount} €</td></tr>` + document.getElementById('full-history').innerHTML;
+
+            alert("Virement exécuté avec succès !");
+            
+            document.getElementById('recipient').value = '';
+            document.getElementById('amount').value = '';
+            document.getElementById('reason').value = '';
+            
+            switchTab('comptes', document.querySelectorAll('.sidebar li')[0]);
+        }
+
+        function logout() {
+            document.getElementById('dashboard-section').classList.add('hidden');
+            document.getElementById('login-section').classList.remove('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+    </script>
+
+</body>
+</html>
