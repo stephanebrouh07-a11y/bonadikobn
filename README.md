@@ -1,2 +1,0 @@
-# bonadikobn
-service en ligne
